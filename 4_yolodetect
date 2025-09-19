@@ -1,0 +1,66 @@
+import os
+from PIL import Image, ImageDraw, ImageFont
+from ultralytics import YOLO
+
+# Carregar o modelo treinado
+model_path = r'D:\_fiap\treinamentoModeloYolo\dataset\best.pt'
+model = YOLO(model_path)
+
+
+# Caminho para a imagem
+image_path = r'D:\_fiap\treinamentoModeloYolo\Arquiteturas Imagens\arch_aws.png'
+
+# Realiza a detecção de objetos na imagem
+results = model.predict(source=image_path, conf=0.25, save=False)
+
+# Carregar a imagem para processamento
+img = Image.open(image_path).convert("RGB")
+draw = ImageDraw.Draw(img)
+
+# Definir a fonte e o tamanho do texto
+try:
+    font = ImageFont.truetype("arial.ttf", 20)
+except IOError:
+    font = ImageFont.load_default()
+
+# Mapear os IDs das classes para os nomes
+names_map = model.names
+
+legend_text = []
+
+# Iterar sobre as detecções
+for i, r in enumerate(results[0].boxes.data):
+    x1, y1, x2, y2, conf, cls_id = r
+    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+    cls_id = int(cls_id)
+    class_name = names_map[cls_id]
+    
+    # Desenhar a bounding box e número
+    draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
+    draw.text((x1, y1 - 25), str(i + 1), fill="red", font=font)
+    
+    # Adicionar legenda
+    legend_text.append(f"{i+1}: {class_name} ({conf:.2f})")
+
+# Calcular altura extra necessária para as legendas
+line_height = 30
+extra_height = len(legend_text) * line_height + 20  # +20 de margem
+
+# Criar nova imagem com espaço abaixo
+img_width, img_height = img.size
+new_img = Image.new("RGB", (img_width, img_height + extra_height), (255, 255, 255))
+new_img.paste(img, (0, 0))
+draw_new = ImageDraw.Draw(new_img)
+
+# Desenhar legendas abaixo da imagem
+y_offset = img_height + 10
+for text in legend_text:
+    draw_new.text((20, y_offset), text, fill="black", font=font)
+    y_offset += line_height
+
+# Salvar resultado
+output_path = "aws_arch_labeled.png"
+new_img.save(output_path)
+
+print(f"Detecção concluída! A imagem com as caixas e legendas abaixo foi salva em '{output_path}'.")
+
