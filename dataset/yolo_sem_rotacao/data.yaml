@@ -1,0 +1,6 @@
+train: train/images
+val: val/images
+test: test/images
+
+nc: 30
+names: ['AWS-Backup', 'AWS-Category_Compute', 'AWS-Cloud-logo', 'AWS-CloudFront', 'AWS-CloudTrail', 'AWS-CloudWatch', 'AWS-EFS', 'AWS-ElastiCache', 'AWS-Key-Management-Service', 'AWS-Private-subnet', 'AWS-Private_vpc', 'AWS-Public-subnet', 'AWS-RDS', 'AWS-Region', 'AWS-Res_Elastic-Load-Balancing_Application-Load-Balancer', 'AWS-Res_Users', 'AWS-Scaling-group', 'AWS-Shield', 'AWS-Simple-Email-Service', 'AWS-WAF', 'Azure_api', 'Azure_api_gateway', 'Azure_cloud_services', 'Azure_http', 'Azure_integration-204-Logic-Apps', 'Azure_management-portal', 'Azure_microsoft_entra', 'Azure_resource_group', 'Azure_services', 'Azure_users']

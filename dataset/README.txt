@@ -6,3 +6,5 @@ Rodar o python na seguinte ordem:
  4_yolodetect.py
  
  Último modelo gerado foi o best.pt está na pasta dataset
+
+ modelo utilizado no driver matheus yolov8s-custom-sem-rotacao-semparametros
