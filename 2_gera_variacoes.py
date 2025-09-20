@@ -15,7 +15,7 @@ OUTPUT_DATASET_DIR = 'dataset/yolo'
 
 # Parâmetros de geração de imagens sintéticas
 # Cada classe terá este número de instâncias no conjunto TOTAL gerado
-TARGET_OCCURRENCES_PER_CLASS = 40 
+TARGET_OCCURRENCES_PER_CLASS = 50 
 IMAGE_SIZE = (1200, 1000)
 MIN_ICONS_PER_IMAGE = 3
 MAX_ICONS_PER_IMAGE = 10
@@ -43,14 +43,15 @@ def generate_dynamic_background(size: Tuple[int, int]) -> Image.Image:
     )
     return Image.new('RGB', size, color=color)
 
+##TO DO PEGAR DA OUTRA PASTA QUEIRA ROTAÇÃO
 def augment_icon(icon_img: Image.Image) -> Image.Image:
-    angle = random.uniform(-15, 15)
-    icon_img = icon_img.rotate(angle, expand=True, fillcolor=(0,0,0,0))
+    # Não aplica rotação, só brilho/contraste
     enhancer = ImageEnhance.Brightness(icon_img)
     icon_img = enhancer.enhance(random.uniform(0.8, 1.2))
     enhancer = ImageEnhance.Contrast(icon_img)
     icon_img = enhancer.enhance(random.uniform(0.8, 1.2))
     return icon_img
+
 
 def convert_bbox_coords(new_coords: Tuple[int, int, int, int], new_img_size: Tuple[int, int]) -> List[float]:
     x_min, y_min, x_max, y_max = new_coords
