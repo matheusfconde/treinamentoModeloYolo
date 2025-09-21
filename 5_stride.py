@@ -1,7 +1,7 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
 from ultralytics import YOLO
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet
 import numpy as np
 
@@ -323,18 +323,13 @@ for image_path in image_paths:
         print(f"⚠️ Arquivo não encontrado: {image_path}")
         continue
 
-    # --- Markdown Section
     base_filename = os.path.basename(image_path)
-    markdown_report += f"## Relatório para: `{base_filename}`\n\n"
-    
-    # --- PDF Section
-    report_story.append(Paragraph(f"## Relatório para: {base_filename}", styles['h2']))
-    report_story.append(Spacer(1, 12))
+    labeled_image_path = f"labeled_{base_filename}"
 
+    # Processar imagem e gerar a versão com anotações
     results = model.predict(source=image_path, conf=0.25, save=False, verbose=False)
     img = Image.open(image_path).convert("RGB")
     draw = ImageDraw.Draw(img)
-
     deteccoes = filtrar_deteccoes_por_iou(results[0].boxes.data, names_map)
     legend_text = []
 
@@ -344,23 +339,7 @@ for image_path in image_paths:
 
         draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
         draw.text((x1, max(0, y1 - 25)), str(i), fill="red", font=font)
-
         legend_text.append(f"{i}: {class_name} ({conf:.2f})")
-
-        if class_name in stride_mapping:
-            # Markdown
-            markdown_report += f"### {class_name}\n"
-            for threat, desc in stride_mapping[class_name].items():
-                markdown_report += f"- **{threat}**: {desc}\n"
-            markdown_report += "\n"
-            
-            # PDF
-            report_story.append(Paragraph(f"### {class_name}", styles['h3']))
-            report_story.append(Spacer(1, 6))
-            for threat, desc in stride_mapping[class_name].items():
-                story_paragraph = Paragraph(f"• <b>{threat}</b>: {desc}", styles['Normal'])
-                report_story.append(story_paragraph)
-                report_story.append(Spacer(1, 6))
 
     line_height = 30
     extra_height = len(legend_text) * line_height + 20
@@ -372,13 +351,38 @@ for image_path in image_paths:
     for text in legend_text:
         draw_new.text((20, y_offset), text, fill="black", font=font)
         y_offset += line_height
+    new_img.save(labeled_image_path)
+    print(f"✅ Processado: {labeled_image_path}")
 
-    output_path = f"labeled_{base_filename}"
-    new_img.save(output_path)
-    print(f"✅ Processado: {output_path}")
-    
-    # Separator
+    # Adicionar seção ao relatório Markdown
+    markdown_report += f"## Relatório para: `{base_filename}`\n\n"
     markdown_report += "---\n\n"
+    
+    # Adicionar seção ao relatório PDF
+    report_story.append(Paragraph(f"## Relatório para: {base_filename}", styles['h2']))
+    report_story.append(Spacer(1, 12))
+    report_story.append(RLImage(labeled_image_path, width=400, height=300)) # Ajuste width/height conforme necessário
+    report_story.append(Spacer(1, 12))
+
+    for i, box_info in enumerate(deteccoes, start=1):
+        x1, y1, x2, y2, conf, cls_id, class_name = box_info
+        
+        # Adicionar ameaças ao relatório Markdown e PDF
+        if class_name in stride_mapping:
+            markdown_report += f"### {class_name}\n"
+            report_story.append(Paragraph(f"### {class_name}", styles['h3']))
+            report_story.append(Spacer(1, 6))
+
+            for threat, desc in stride_mapping[class_name].items():
+                markdown_report += f"- **{threat}**: {desc}\n"
+                story_paragraph = Paragraph(f"• <b>{threat}</b>: {desc}", styles['Normal'])
+                report_story.append(story_paragraph)
+                report_story.append(Spacer(1, 6))
+
+            markdown_report += "\n"
+    
+    markdown_report += "---\n\n"
+    report_story.append(Spacer(1, 24))
 
 # ======================
 # 6. Salvar arquivos

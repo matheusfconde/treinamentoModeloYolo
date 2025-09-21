@@ -2,6 +2,8 @@
 
 ## Relatório para: `arch_azure.png`
 
+---
+
 ### Azure_services
 - **Spoofing**: Serviço falso se passa por oficial.
 - **Tampering**: Alteração de parâmetros de serviço.
@@ -101,6 +103,8 @@
 ---
 
 ## Relatório para: `arch_aws.png`
+
+---
 
 ### AWS-RDS
 - **Spoofing**: Uso de credenciais de banco falsificadas.
