@@ -314,6 +314,17 @@ names_map = model.names
 # ======================
 # 5. Gerar Relatório
 # ======================
+# --- INÍCIO DA CORREÇÃO ---
+# Define a pasta onde os relatórios e imagens serão salvos
+OUTPUT_FOLDER = "analise_stride"
+
+# Verifica se a pasta existe, se não, cria
+if not os.path.exists(OUTPUT_FOLDER):
+    os.makedirs(OUTPUT_FOLDER)
+    print(f"✅ Pasta '{OUTPUT_FOLDER}' criada para salvar os relatórios.")
+# --- FIM DA CORREÇÃO ---
+
+
 markdown_report = "# Relatório de Ameaças STRIDE\n\n"
 report_story = []
 styles = getSampleStyleSheet()
@@ -324,7 +335,10 @@ for image_path in image_paths:
         continue
 
     base_filename = os.path.basename(image_path)
-    labeled_image_path = f"labeled_{base_filename}"
+    
+    # --- CORREÇÃO: Usa o caminho completo para a imagem rotulada ---
+    labeled_image_path = os.path.join(OUTPUT_FOLDER, f"labeled_{base_filename}")
+    # --- FIM DA CORREÇÃO ---
 
     # Processar imagem e gerar a versão com anotações
     results = model.predict(source=image_path, conf=0.25, save=False, verbose=False)
@@ -387,12 +401,17 @@ for image_path in image_paths:
 # ======================
 # 6. Salvar arquivos
 # ======================
+# --- CORREÇÃO: Usa o caminho completo para salvar os arquivos finais ---
+markdown_output_path = os.path.join(OUTPUT_FOLDER, "relatorio_stride.md")
+pdf_output_path = os.path.join(OUTPUT_FOLDER, "relatorio_stride.pdf")
+
 # Salvar Markdown
-with open("relatorio_stride.md", "w", encoding="utf-8") as f:
+with open(markdown_output_path, "w", encoding="utf-8") as f:
     f.write(markdown_report)
 
 # Salvar PDF
-doc = SimpleDocTemplate("relatorio_stride.pdf")
+doc = SimpleDocTemplate(pdf_output_path)
 doc.build(report_story)
 
-print("📄 Relatórios gerados: relatorio_stride.md e relatorio_stride.pdf")
+print(f"📄 Relatórios gerados em '{OUTPUT_FOLDER}': {os.path.basename(markdown_output_path)} e {os.path.basename(pdf_output_path)}")
+# --- FIM DA CORREÇÃO ---
